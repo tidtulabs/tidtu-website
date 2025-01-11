@@ -63,6 +63,7 @@ type FetchResponse = {
   meta: {
     currentPagination: string;
     nextPagination: string;
+    shouldUpdate?: boolean;
   };
 };
 
@@ -97,6 +98,20 @@ const fetchPage = async (total: boolean) => {
     );
 
     const data: FetchResponse = await response.json();
+    if (data.meta.shouldUpdate) {
+      fetch(
+        `${import.meta.env.VITE_CACHE_SERVICE_URL}/api/v1/pdaotao/scraping/examlist`,
+        { method: "PUT" },
+      )
+        .then((res) => {
+          if (res.ok) {
+            // console.log("Updated");
+          }
+        })
+        .catch((err) => {
+          // console.error(err);
+        });
+    }
     if (!data.success) {
       error.value = true;
       /*
