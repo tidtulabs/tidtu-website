@@ -352,7 +352,7 @@ const table = useVueTable({
 </script>
 
 <template>
-  <div v-if="error || exams == null || exams.length === 0" class="flex-1 flex flex-col items-center justify-center">
+  <div v-if="error" class="flex-1 flex flex-col items-center justify-center">
     <p class="text-red-500 text-3xl">Lỗi khi tải dữ liệu</p>
     <p>Vui lòng thử lại sau!</p>
   </div>
