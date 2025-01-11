@@ -33,3 +33,4 @@ coverage
 .wrangler
 .dev.vars
 .env
+.env
