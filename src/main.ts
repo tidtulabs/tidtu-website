@@ -3,5 +3,11 @@ import "./assets/styles/index.css";
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
+import VueGtag from "vue-gtag";
 
-createApp(App).use(router).mount("#app");
+createApp(App)
+	.use(router)
+	.use(VueGtag, {
+		config: { id: "G-F1TX2BDFSE" },
+	})
+	.mount("#app");
