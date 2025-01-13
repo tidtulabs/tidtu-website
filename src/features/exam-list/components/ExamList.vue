@@ -221,7 +221,7 @@ const columns: ColumnDef<ExamItem>[] = [
         h("span", { class: "text-xs text-gray-500" }, [
           isNew
             ? h(IconSparkles, {
-                class: "w-4 h-4 text-yellow-500 animate-pulse stroke-1",
+                class: "w-6 h-6 text-yellow-500 animate-pulse stroke-1",
               })
             : null,
         ]),
