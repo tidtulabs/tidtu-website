@@ -20,7 +20,7 @@ const toggleColorMode = () => {
   colorMode.store.value = colorMode.store.value === "dark" ? "light" : colorMode.store.value === "light" ? "auto" : "dark";
 };
 
-const open = ref(true);
+const open = ref(false);
 
 </script>
 <template>
