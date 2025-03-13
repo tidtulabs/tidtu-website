@@ -11,6 +11,7 @@ import { useColorMode } from "@vueuse/core";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { RouterLink } from "vue-router";
 import NavBarMobileView from "./NavBarMobileView.vue";
+import { ref } from "vue";
 const colorMode = useColorMode({
   emitAuto: true,
 });
@@ -19,6 +20,7 @@ const toggleColorMode = () => {
   colorMode.store.value = colorMode.store.value === "dark" ? "light" : colorMode.store.value === "light" ? "auto" : "dark";
 };
 
+const open = ref(true);
 
 </script>
 <template>
@@ -63,7 +65,7 @@ const toggleColorMode = () => {
       </button>
 
       <div class="md:hidden flex items-center">
-        <Sheet>
+        <Sheet v-model:open="open">
           <SheetTrigger>
             <IconMenu2 class="w-6 h-6 hover:text-primary"
           /></SheetTrigger>
@@ -74,7 +76,7 @@ const toggleColorMode = () => {
             <!--   This action cannot be undone. This will permanently delete your -->
             <!--   account and remove your data from our servers. -->
             <!-- </SheetDescription> -->
-            <NavBarMobileView />
+            <NavBarMobileView :open="open" @update:open="open = $event" />
             <!-- </SheetHeader> -->
           </SheetContent>
         </Sheet>
