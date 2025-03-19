@@ -104,9 +104,9 @@ const { isPending, isFetching, isError, error } = useQuery({
     if (data.meta.shouldUpdate) {
       updateExamList();
     }
-    return data
+    return data 
   },
-  // staleTime: 1000 * 60 * 10,
+  refetchOnWindowFocus: false,
 })
 
 const queryClient = useQueryClient()
