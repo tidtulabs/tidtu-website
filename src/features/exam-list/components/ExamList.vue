@@ -43,6 +43,10 @@ import {
 import { Label } from "@/components/ui/label";
 import ExamListLoading from "./ExamListLoading.vue";
 import { toast } from "@/components/ui/toast";
+import { getExamList } from "../api/getExamList";
+import { updateExamList } from "../api/updateExamList";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { getLinkDowExamList } from "../api/getLinkDowExamList";
 
 interface ExamItem {
   examTitle: string; // Tiêu đề bài thi
@@ -53,6 +57,17 @@ interface ExamItem {
   row: number; // Số thứ tự dòng bài thi trong bảng
   isDown?: boolean;
 }
+
+type FetchFileResponse = {
+  success: boolean;
+  response: {
+    data: {
+      url: string;
+    };
+  };
+  message: string;
+  typeError?: string;
+};
 
 type FetchResponse = {
   success: boolean;
@@ -67,89 +82,42 @@ type FetchResponse = {
   };
 };
 
-type FetchFileResponse = {
-  success: boolean;
-  response: {
-    data: {
-      url: string;
-    };
-  };
-  message: string;
-};
-
-const isMounted = ref(false);
 const examsTotal = ref<ExamItem[]>([]);
 const examsFrequency = ref<ExamItem[]>([]);
 const exams = ref<ExamItem[]>([]);
-const currentPagination = ref<string>();
-const error = ref<boolean>(false);
 
 const fetchingFlag = ref<{ isAuto: boolean; isFetching: boolean }>({
   isAuto: false,
   isFetching: false,
 });
 
-const isDownloading = ref<Boolean>(false);
-
-const fetchPage = async (total: boolean) => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/v1/pdaotao/scraping/examlist${total ? `?total=${total}` : ""}`,
-    );
-
-    const data: FetchResponse = await response.json();
+const { isPending, isFetching, isError, error } = useQuery({
+  queryKey: ['get-exam-list'],
+  queryFn : async () =>{
+    const data = await getExamList(false)
+    // console.log(data);
+    if(!data.success){
+      return
+    }
+    exams.value = data.response.data
+    examsFrequency.value = data.response.data
     if (data.meta.shouldUpdate) {
-      fetch(
-        `${import.meta.env.VITE_CACHE_SERVICE_URL}/api/v1/pdaotao/scraping/examlist`,
-        { method: "PUT" },
-      )
-        .then((res) => {
-          if (res.ok) {
-            // console.log("Updated");
-          }
-        })
-        .catch((err) => {
-          // console.error(err);
-        });
+      updateExamList();
     }
-    if (!data.success) {
-      error.value = true;
-      /*
-      toast({
-        title: "Lỗi",
-        description: data.message,
-        variant: "error",
-      });
-      */
-      return;
-    }
-    currentPagination.value = data.meta.currentPagination;
-    return data;
-  } catch (error: any) {
-    error.value = true;
-    /* toast({
-      title: "Lỗi",
-      description: "Vui lòng thử lại sau",
-      variant: "error",
-    }); */
-  } finally {
-    fetchingFlag.value.isAuto = false;
-    fetchingFlag.value.isFetching = false;
-  }
-};
+    return data
+  },
+  staleTime: 1000 * 60 * 10,
+})
 
-// console.log(error.value);
-onMounted(async () => {
-  isMounted.value = true;
-  // console.log("mounted");
-  //updateColumnVisibility();
-  //window.addEventListener("resize", updateColumnVisibility);
-  const res = await fetchPage(false);
-  if (res?.response) {
-    exams.value = res.response.data;
-    examsFrequency.value = res.response?.data;
-  }
-});
+const queryClient = useQueryClient()
+const mutation = useMutation({
+    mutationFn: async ({ total }: { total: boolean }): Promise<FetchResponse> => {
+    return getExamList(total);
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['get-exam-list-total'] })
+  },
+})
 
 const fetchMore = async (isChecked: boolean) => {
   if (isChecked) {
@@ -157,10 +125,17 @@ const fetchMore = async (isChecked: boolean) => {
       exams.value = [...exams.value, ...examsTotal.value];
     } else {
       fetchingFlag.value.isFetching = true;
-      const res = await fetchPage(true);
-      if (res?.response?.data) {
-        examsTotal.value = res.response.data;
-        exams.value = [...exams.value, ...res.response.data];
+      
+      try {
+        const res = await mutation.mutateAsync({ total: true }); 
+        if (res?.response?.data) {
+          examsTotal.value = res.response.data;
+          exams.value = [...exams.value, ...res.response.data];
+        }
+      } catch (error) {
+        console.error("Fetch failed:", error);
+      } finally {
+        fetchingFlag.value.isFetching = false;
       }
     }
   } else {
@@ -236,37 +211,12 @@ const columns: ColumnDef<ExamItem>[] = [
       if (row.original.isDown === undefined) {
         row.original.isDown = false;
       }
-      // row.original.isDown = ref(false);
-      // const isDown = ref(false);
       const handleClick = async () => {
-        // const msg = toast({
-        //   title: "Đang gửi yêu cầu",
-        //   description: "Vui lòng chờ trong giây lát",
-        // });
         row.original.isDown = true;
-        // isDown.value = true;
-        // console.log(isDown.value);
-
-        // console.log("Downloading from:", row.original.href);
         const match = /ID=(\d+)/.exec(row.original.examDetailsUrl);
-        let id = "";
-
-        if (match) {
-          id = match[1];
-        } else {
-          id = "000000";
-          console.error("Cannot found href.");
-        }
-
-        // console.log("Downloading from:", row.original.examDetailsUrl);
-        const r = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/v1/pdaotao/scraping/examlist/${id}`,
-        );
-
-        const res: FetchFileResponse = await r.json();
-
+        const id = match ? match[1] : "000000";  
+        const res: FetchFileResponse = await getLinkDowExamList(id);
         const url = res?.response?.data?.url;
-
         if (url && res?.success) {
           const link = url;
           const a = document.createElement("a");
@@ -275,14 +225,8 @@ const columns: ColumnDef<ExamItem>[] = [
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          isDownloading.value = false;
-          // isDown.value = false;
           row.original.isDown = false;
-
-          // msg.dismiss();
         } else {
-          isDownloading.value = false;
-          // msg.dismiss();
           toast({
             title: "Lỗi",
             description: res?.message,
@@ -352,12 +296,13 @@ const table = useVueTable({
 </script>
 
 <template>
-  <div v-if="error" class="flex-1 flex flex-col items-center justify-center">
+ 
+  <div v-if="isFetching">
+    <ExamListLoading />
+  </div>
+   <div v-else-if="isError" class="flex-1 flex flex-col items-center justify-center">
     <p class="text-red-500 text-3xl">Lỗi khi tải dữ liệu</p>
     <p>Vui lòng thử lại sau!</p>
-  </div>
-  <div v-else-if="!isMounted || exams.length <= 0">
-    <ExamListLoading />
   </div>
   <div v-else class="flex-1 flex flex-col gap-5">
     <div class="relative w-full max-w-xl m-auto">
