@@ -106,7 +106,7 @@ const { isPending, isFetching, isError, error } = useQuery({
     }
     return data
   },
-  staleTime: 1000 * 60 * 10,
+  // staleTime: 1000 * 60 * 10,
 })
 
 const queryClient = useQueryClient()
