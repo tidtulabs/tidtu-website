@@ -43,13 +43,13 @@ const cards = [
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 xl:grid-cols-2 lg:pt-8 pt-6">
       <Card
-        class="flex-1 hover:border-primary border hover:scale-105 transition-transform duration-300"
+        class="flex-1  border hover:border-primary transition-transform duration-300 group"
         v-for="(card, index) in cards"
         :key="index"
       >
         <CardHeader>
           <CardTitle>
-            <component :is="card.title" class="w-10 h-10 text-primary" />
+            <component :is="card.title" class="w-10 h-10 text-primary group-hover:scale-125 transition-transform duration-300" />
           </CardTitle>
           <CardDescription
             class="font-semibold text-lg text-black dark:text-white line-clamp-3"
