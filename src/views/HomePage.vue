@@ -33,17 +33,17 @@ const cards = [
 </script>
 
 <template>
-  <div class="flex flex-col container">
-    <div class="m-14">
+  <div class="flex flex-col container lg:py-8 py-6">
+    <div>
       <h1
         class="lg:text-5xl md:text-4xl text-3xl text-primary text-center font-bold tracking-tight"
       >
         Tiện ích DTU
       </h1>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 xl:grid-cols-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 xl:grid-cols-2 lg:pt-8 pt-6">
       <Card
-        class="flex-1 hover:border-primary border"
+        class="flex-1 hover:border-primary border hover:scale-105 transition-transform duration-300"
         v-for="(card, index) in cards"
         :key="index"
       >

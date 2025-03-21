@@ -14,9 +14,15 @@ import HeaderView from "@/views/HeaderView.vue";
     </header>
     <div class="flex-1 bg-background">
       <main class="relative lg:gap-10">
-          <RouterView />
+        <RouterView />
       </main>
     </div>
+    <footer
+      class="bg-background/80 h-20 backdrop-blur-lg border-t border-border"
+    >
+      <div class="container flex items-center justify-between h-full">
+        <p class="text-sm text-gray-400">© 2025 - ngtuonghy</p>
+      </div>
+    </footer>
   </div>
 </template>
-

@@ -9,7 +9,7 @@ defineProps({ isShowHeader: { type: Boolean, default: true } });
       <Skeleton class="w-full h-10" />
     </div>
     <Skeleton v-if="isShowHeader" class="w-11 h-7" />
-    <div v-for="index in 8" :key="index" class="mb-1">
+    <div v-for="index in 7" :key="index" class="mb-1">
       <Skeleton class="h-12 w-full" />
     </div>
   </div>
