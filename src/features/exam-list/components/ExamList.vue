@@ -235,6 +235,13 @@ const columns: ColumnDef<ExamItem>[] = [
               variant: "error",
             });
           }
+          if (res.typeError === "SERVER_ERROR") {
+            toast({
+              title: "Lỗi",
+              description: "Lỗi server, vui lòng thử lại sau",
+              variant: "error",
+            });
+          }
         }
       };
       return h(
