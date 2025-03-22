@@ -254,7 +254,7 @@ const columns: ColumnDef<ExamItem>[] = [
         row.original.isDown
           ? h(IconLoader3, {
               class:
-                "w-6 h-6 cursor-pointer mx-auto text-primary/80 animate-spin-fast pointer-events-none",
+                "w-7 h-7 mx-auto text-primary/80 animate-spin-fast pointer-events-none",
             })
           : h(IconFileDownload, {
               class:
