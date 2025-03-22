@@ -45,7 +45,7 @@ import ExamListLoading from "./ExamListLoading.vue";
 import { toast } from "@/components/ui/toast";
 import { getExamList } from "../api/getExamList";
 import { updateExamList } from "../api/updateExamList";
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { getLinkDowExamList } from "../api/getLinkDowExamList";
 
 interface ExamItem {
@@ -92,32 +92,32 @@ const fetchingFlag = ref<{ isAuto: boolean; isFetching: boolean }>({
 });
 
 const { isPending, isFetching, isError, error } = useQuery({
-  queryKey: ['get-exam-list'],
-  queryFn : async () =>{
-    const data = await getExamList(false)
+  queryKey: ["get-exam-list"],
+  queryFn: async () => {
+    const data = await getExamList(false);
     // console.log(data);
-    if(!data.success){
-      return
+    if (!data.success) {
+      return;
     }
-    exams.value = data.response.data
-    examsFrequency.value = data.response.data
+    exams.value = data.response.data;
+    examsFrequency.value = data.response.data;
     if (data.meta.shouldUpdate) {
       updateExamList();
     }
-    return data 
+    return data;
   },
   refetchOnWindowFocus: false,
-})
+});
 
-const queryClient = useQueryClient()
+const queryClient = useQueryClient();
 const mutation = useMutation({
-    mutationFn: async ({ total }: { total: boolean }): Promise<FetchResponse> => {
+  mutationFn: async ({ total }: { total: boolean }): Promise<FetchResponse> => {
     return getExamList(total);
   },
   onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['get-exam-list-total'] })
+    queryClient.invalidateQueries({ queryKey: ["get-exam-list-total"] });
   },
-})
+});
 
 const fetchMore = async (isChecked: boolean) => {
   if (isChecked) {
@@ -125,9 +125,9 @@ const fetchMore = async (isChecked: boolean) => {
       exams.value = [...exams.value, ...examsTotal.value];
     } else {
       fetchingFlag.value.isFetching = true;
-      
+
       try {
-        const res = await mutation.mutateAsync({ total: true }); 
+        const res = await mutation.mutateAsync({ total: true });
         if (res?.response?.data) {
           examsTotal.value = res.response.data;
           exams.value = [...exams.value, ...res.response.data];
@@ -214,7 +214,7 @@ const columns: ColumnDef<ExamItem>[] = [
       const handleClick = async () => {
         row.original.isDown = true;
         const match = /ID=(\d+)/.exec(row.original.examDetailsUrl);
-        const id = match ? match[1] : "000000";  
+        const id = match ? match[1] : "000000";
         const res: FetchFileResponse = await getLinkDowExamList(id);
         const url = res?.response?.data?.url;
         if (url && res?.success) {
@@ -227,11 +227,14 @@ const columns: ColumnDef<ExamItem>[] = [
           document.body.removeChild(a);
           row.original.isDown = false;
         } else {
-          toast({
-            title: "Lỗi",
-            description: res?.message,
-            variant: "error",
-          });
+          row.original.isDown = false;
+          if (res.typeError === "NOT_FOUND") {
+            toast({
+              title: "Lỗi",
+              description: "Không tìm thấy tệp tin tải xuống",
+              variant: "error",
+            });
+          }
         }
       };
       return h(
@@ -296,11 +299,13 @@ const table = useVueTable({
 </script>
 
 <template>
- 
   <div v-if="isFetching">
     <ExamListLoading />
   </div>
-   <div v-else-if="isError" class="flex-1 flex flex-col items-center justify-center">
+  <div
+    v-else-if="isError"
+    class="flex-1 flex flex-col items-center justify-center"
+  >
     <p class="text-red-500 text-3xl">Lỗi khi tải dữ liệu</p>
     <p>Vui lòng thử lại sau!</p>
   </div>
